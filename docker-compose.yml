@@ -1,0 +1,34 @@
+version: '3'
+services:
+    app:
+        container_name: boolean-service
+        build: .
+        ports: 
+            - 8080:8080 
+        restart: on-failure
+        depends_on:
+            - booleanservice-mysql     
+        networks: 
+            - fullstack     
+    booleanservice-mysql:
+        image: mysql:5.7
+        ports: 
+            - 33306:3306
+        environment: 
+            - MYSQL_ROOT_HOST=${DB_HOST} 
+            - MYSQL_USER=${DB_USER}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+            - MYSQL_DATABASE=${DB_NAME}
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+        volumes:
+            - database_mysql:/var/lib/mysql
+        networks:
+            - fullstack
+
+volumes:
+    database_mysql:
+    
+    # Networks to be created to facilitate communication between containers
+networks:
+    fullstack:
+        driver: bridge
