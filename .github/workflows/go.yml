@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get dependencies
-      run: go get mod download 
+      run: go mod download 
 
     - name: Build
       run: go build -v -a main ./src/main.go
