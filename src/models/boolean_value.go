@@ -21,3 +21,12 @@ func (base *NameValue) BeforeCreate(scope *gorm.Scope) error {
 	uuid := uuid.NewV4()
 	return scope.SetColumn("ID", uuid)
 }
+
+//DatabaseNameValue is
+type DatabaseNameValue struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Value     bool
+	Key       string
+}

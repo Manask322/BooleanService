@@ -3,7 +3,6 @@ package controller
 import (
 	"booleanservice/src/middleware"
 	"booleanservice/src/models"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -50,31 +49,22 @@ func processRequest(c *gin.Context) (models.NameValue, error) {
 
 //CreateValue is
 func CreateValue(c *gin.Context) {
-	fmt.Println("Inside Main Func")
 	bValue, err := processRequest(c)
 
 	if err != nil {
 		return
 	}
 
-	db = middleware.DB
-	response := db.Create(&bValue)
+	queEle := middleware.ServiceQueueElement{C: c}
+	middleware.ServiceQueueIn <- queEle
+	fmt.Println(len(middleware.ServiceQueueIn))
+	middleware.StartQueueJob(c, bValue)
+	queEle = <-middleware.ServiceQueueOut
 
-	p, _ := json.Marshal(response.Value)
-	var nameValue NameValue
-	err = json.Unmarshal(p, &nameValue)
-
-	if err != nil {
-		c.JSON(500, gin.H{
-			"err": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"id":    nameValue.ID,
-		"key":   nameValue.Key,
-		"value": nameValue.Value,
+	queEle.C.JSON(http.StatusOK, gin.H{
+		"id":    queEle.NameValue.ID,
+		"key":   queEle.NameValue.Key,
+		"value": queEle.NameValue.Value,
 	})
 	return
 }
