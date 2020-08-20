@@ -4,7 +4,7 @@ import (
 	"booleanservice/src/middleware"
 	"booleanservice/src/models"
 	"fmt"
-	"net/http"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -56,12 +56,18 @@ func CreateValue(c *gin.Context) {
 	}
 
 	queEle := middleware.ServiceQueueElement{C: c}
+	if len(middleware.ServiceQueueIn) > middleware.SERVICEQUEUELENGTH {
+		queEle.C.JSON(500, gin.H{
+			"msg": "Database Server Overload!!!! Please Try Again Later",
+		})
+		return
+	}
 	middleware.ServiceQueueIn <- queEle
-	fmt.Println(len(middleware.ServiceQueueIn))
+	log.Printf("| Length of Create Process Queue : %d", len(middleware.ServiceQueueIn))
 	middleware.StartQueueJob(c, bValue)
 	queEle = <-middleware.ServiceQueueOut
 
-	queEle.C.JSON(http.StatusOK, gin.H{
+	queEle.C.JSON(201, gin.H{
 		"id":    queEle.NameValue.ID,
 		"key":   queEle.NameValue.Key,
 		"value": queEle.NameValue.Value,
@@ -75,9 +81,7 @@ func UpdateValue(c *gin.Context) {
 
 	bValue, err := processRequest(c)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"err": err.Error(),
-		})
+		return
 	}
 
 	db = middleware.DB
@@ -89,6 +93,7 @@ func UpdateValue(c *gin.Context) {
 		c.JSON(500, gin.H{
 			"err": err.Error(),
 		})
+		return
 	}
 
 	err = db.Model(&models.NameValue{}).Where("id = ?", id).Take(&nameValue).Error
@@ -123,6 +128,7 @@ func DeleteValue(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"err": "Key Not found",
 		})
+		return
 	}
 	err = db.Unscoped().Where("id = ?", id).Delete(&models.NameValue{}).Error
 
