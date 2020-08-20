@@ -3,8 +3,6 @@ package middleware
 import (
 	"booleanservice/src/models"
 	"encoding/json"
-	"fmt"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,8 +27,6 @@ func StartQueueJob(c *gin.Context, bValue models.NameValue) {
 
 func processDatabase(bValue models.NameValue) {
 	db := DB
-	fmt.Println("Sasasa")
-	time.Sleep(10 * time.Second)
 	response := db.Create(&bValue)
 	p, _ := json.Marshal(response.Value)
 	var nameValue models.DatabaseNameValue
