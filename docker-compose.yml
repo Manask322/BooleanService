@@ -7,13 +7,15 @@ services:
             - 8080:8080 
         restart: on-failure
         depends_on:
-            - booleanservice-mysql     
+            - booleanservice-mysql
+        volumes: 
+            - app:/app/
         networks: 
             - fullstack     
     booleanservice-mysql:
         image: mysql:5.7
         ports: 
-            - 33306:3306
+            - 33305:3306
         environment: 
             - MYSQL_ROOT_HOST=${DB_HOST} 
             - MYSQL_USER=${DB_USER}
@@ -26,6 +28,7 @@ services:
             - fullstack
 
 volumes:
+    app:
     database_mysql:
     
     # Networks to be created to facilitate communication between containers
