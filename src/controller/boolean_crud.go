@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 )
@@ -26,25 +27,37 @@ type NameValue struct {
 
 //VALUE is
 type VALUE struct {
+	Value *bool `json:"value" binding:"required"`
+}
+
+//KeyValue is
+type KeyValue struct {
 	Value *bool   `json:"value" binding:"required"`
 	Key   *string `json:"key" binding:"required"`
 }
 
 func processRequest(c *gin.Context) (models.NameValue, error) {
 	var rValue VALUE
-	err := c.BindJSON(&rValue)
-	if err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"err":  "Please submit the valid data",
-		})
-		return models.NameValue{}, err
+	var kValue KeyValue
+	var berr error
+	if aerr := c.ShouldBindBodyWith(&kValue, binding.JSON); aerr == nil {
+		bValue := models.NameValue{
+			Value: *(kValue.Value),
+			Key:   *(kValue.Key),
+		}
+		return bValue, nil
+	} else if berr = c.ShouldBindBodyWith(&rValue, binding.JSON); berr == nil {
+		bValue := models.NameValue{
+			Value: *(rValue.Value),
+			Key:   "",
+		}
+		return bValue, nil
 	}
-	bValue := models.NameValue{
-		Value: *(rValue.Value),
-		Key:   *(rValue.Key),
-	}
-	return bValue, nil
+	c.JSON(400, gin.H{
+		"code": 400,
+		"err":  "Please submit the valid data",
+	})
+	return models.NameValue{}, berr
 }
 
 //CreateValue is
@@ -78,14 +91,33 @@ func CreateValue(c *gin.Context) {
 //UpdateValue is
 func UpdateValue(c *gin.Context) {
 	id := c.Param("id")
-
-	bValue, err := processRequest(c)
-	if err != nil {
-		return
-	}
+	var bValue models.NameValue
 
 	db = middleware.DB
 	var nameValue models.NameValue
+	err := db.Model(&models.NameValue{}).Where("id = ?", id).Take(&nameValue).Error
+	if gorm.IsRecordNotFoundError(err) {
+		c.JSON(400, gin.H{
+			"err": "Record Not found",
+		})
+		return
+	}
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(500, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	bValue, err = processRequest(c)
+	if bValue.Key == "" {
+		bValue.Key = nameValue.Key
+	}
+
+	if err != nil {
+		return
+	}
 	err = db.Model(&nameValue).Where("id = ?", id).Update(
 		map[string]interface{}{"key": bValue.Key, "value": bValue.Value}).Error
 
@@ -95,8 +127,9 @@ func UpdateValue(c *gin.Context) {
 		})
 		return
 	}
-
+	middleware.Mu.RLock()
 	err = db.Model(&models.NameValue{}).Where("id = ?", id).Take(&nameValue).Error
+	middleware.Mu.RUnlock()
 	if gorm.IsRecordNotFoundError(err) {
 		c.JSON(400, gin.H{
 			"err": "Record Not found",
@@ -155,7 +188,11 @@ func ListAll(c *gin.Context) {
 func GetValue(c *gin.Context) {
 	id := c.Param("id")
 	db = middleware.DB
+
+	middleware.Mu.RLock()
 	err := db.Model(&models.NameValue{}).Where("id = ?", id).Take(&value).Error
+	middleware.Mu.RUnlock()
+
 	if gorm.IsRecordNotFoundError(err) {
 		c.JSON(400, gin.H{
 			"err": "Record Not found",

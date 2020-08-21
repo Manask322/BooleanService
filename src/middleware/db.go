@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	_ "github.com/go-sql-driver/mysql" //COMMENT
 	"github.com/jinzhu/gorm"
@@ -14,6 +15,7 @@ import (
 //DB is
 var DB *gorm.DB
 var err error
+var Mu sync.RWMutex
 
 func getDbURL() string {
 	username := os.Getenv("DB_USER")
