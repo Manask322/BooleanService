@@ -2,7 +2,7 @@ package router
 
 import (
 	"booleanservice/src/controller"
-	"booleanservice/src/middleware"
+	"booleanservice/src/service"
 	"log"
 	"os"
 
@@ -16,7 +16,7 @@ func SetupRouter() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	authMiddleware, err := middleware.JWTMiddleware()
+	authMiddleware, err := service.JWTMiddleware()
 
 	if err != nil {
 		log.Fatal(err)
@@ -30,7 +30,6 @@ func SetupRouter() *gin.Engine {
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.POST("/", controller.CreateValue)
-		auth.GET("/", controller.ListAll)
 		auth.DELETE("/:id", controller.DeleteValue)
 		auth.PATCH("/:id", controller.UpdateValue)
 		auth.GET("/:id", controller.GetValue)

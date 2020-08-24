@@ -22,7 +22,7 @@ type ServiceQueueElement struct {
 //StartQueueJob is
 func StartQueueJob(c *gin.Context, bValue models.NameValue) {
 
-	go processDatabase(bValue)
+	processDatabase(bValue)
 }
 
 func processDatabase(bValue models.NameValue) {
@@ -31,7 +31,7 @@ func processDatabase(bValue models.NameValue) {
 	p, _ := json.Marshal(response.Value)
 	var nameValue models.DatabaseNameValue
 	json.Unmarshal(p, &nameValue)
-	queEle := <-ServiceQueueIn
-	queEle.NameValue = nameValue
-	ServiceQueueOut <- queEle
+	//queEle := <-ServiceQueueIn
+	//queEle.NameValue = nameValue
+	//ServiceQueueOut <- queEle
 }

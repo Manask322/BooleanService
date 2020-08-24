@@ -4,12 +4,18 @@ import (
 	"booleanservice/src/middleware"
 	"booleanservice/src/router"
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 )
 
 func main() {
-	_, err := middleware.StartDb()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	_, err = middleware.StartDb()
+
 
 	if err != nil {
 		log.Fatal(err)

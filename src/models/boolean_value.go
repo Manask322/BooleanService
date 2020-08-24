@@ -7,6 +7,19 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+type User struct {
+	ID int `gorm:"primary key"`
+	Username string `json:"username" gorm:"unique"`
+	Password string `json:"password"`
+}
+
+type BooleanUser struct {
+	Id 		  int
+	UserName  string
+	FirstName string
+	LastName  string
+}
+
 //NameValue is
 type NameValue struct {
 	ID        uuid.UUID `gorm:"primary_key; type:char(36); column:id;"`
@@ -14,6 +27,7 @@ type NameValue struct {
 	UpdatedAt time.Time `json:"update_at"`
 	Value     bool      `gorm:"not null"`
 	Key       string
+	UserID    int       `json:"user_id"`
 }
 
 //BeforeCreate is

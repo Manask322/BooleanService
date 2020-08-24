@@ -3,13 +3,11 @@ package middleware
 import (
 	"booleanservice/src/models"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql" //COMMENT
 	"github.com/jinzhu/gorm"
-	"github.com/joho/godotenv"
 )
 
 //DB is
@@ -29,10 +27,7 @@ func getDbURL() string {
 
 //StartDb is
 func StartDb() (*gorm.DB, error) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+
 	DB, err = gorm.Open(os.Getenv("DB_DRIVER"), getDbURL())
 
 	if err != nil {
@@ -41,6 +36,17 @@ func StartDb() (*gorm.DB, error) {
 
 	// var value models.NameValue
 	DB.AutoMigrate(&models.NameValue{})
+	DB.AutoMigrate(&models.User{})
+	//DB.Model(&models.User{}).AddForeignKey("id", "name_values(user_id)", "CASCADE", "RESTRICT")
+
+	//var user models.User
+	//
+	//user.Username = "manask322"
+	//
+	//hashedPassword, err := bcrypt.GenerateFromPassword([]byte("123Manas@"), 8)
+	//user.Password = string(hashedPassword)
+	//DB.Create(&user)
+
 	return DB, err
 
 }
