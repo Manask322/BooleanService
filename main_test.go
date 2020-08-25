@@ -88,12 +88,14 @@ func TestCreate(t *testing.T) {
 	ts := httptest.NewUnstartedServer(router.SetupRouter())
 	ts.Listener.Close()
 	ts.Listener = l
+	middleware.StartDb()
 	ts.Start()
+	defer 	middleware.CloseDb()
 	defer ts.Close()
 	var jsonStr = []byte(`
 		{
-			"username":"admin",
-			"password":"admin"
+			"username":"manask322",
+			"password":"123Manas@"
 		
 		}`)
 	req, err1 := http.NewRequest("POST", fmt.Sprintf("%s/login", ts.URL), bytes.NewBuffer(jsonStr))
@@ -150,7 +152,6 @@ func TestCreate(t *testing.T) {
 	}`)
 
 	//Create Request
-	middleware.StartDb()
 	req, err1 = http.NewRequest("POST", fmt.Sprintf("%s/", ts.URL), bytes.NewBuffer(jsonStr))
 
 	if err1 != nil {
@@ -194,6 +195,49 @@ func TestCreate(t *testing.T) {
 	if val[0] != "application/json; charset=utf-8" {
 		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
 	}
+
+	jsonStr = []byte(`
+	{
+		"key":"Manas",
+		"value": "false"
+	}`)
+
+
+	//Create Request
+	req, err1 = http.NewRequest("POST", fmt.Sprintf("%s/", ts.URL), bytes.NewBuffer(jsonStr))
+
+	if err1 != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Content-Type", "application/json")
+
+	client = &http.Client{}
+	resp, err = client.Do(req)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, got %v", resp.StatusCode)
+	}
+
+	val, ok = resp.Header["Content-Type"]
+
+	// Assert that the "content-type" header is actually set
+	if !ok {
+		t.Fatalf("Expected Content-Type header to be set")
+	}
+
+	// Assert that it was set as expected
+	if val[0] != "application/json; charset=utf-8" {
+		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
+	}
+
+
 }
 
 func TestPatch(t *testing.T) {
@@ -206,12 +250,14 @@ func TestPatch(t *testing.T) {
 	ts := httptest.NewUnstartedServer(router.SetupRouter())
 	ts.Listener.Close()
 	ts.Listener = l
+	middleware.StartDb()
 	ts.Start()
+	defer middleware.CloseDb()
 	defer ts.Close()
 	var jsonStr = []byte(`
 		{
-			"username":"admin",
-			"password":"admin"
+			"username":"manask322",
+			"password":"123Manas@"
 		
 		}`)
 	req, err1 := http.NewRequest("POST", fmt.Sprintf("%s/login", ts.URL), bytes.NewBuffer(jsonStr))
@@ -268,7 +314,6 @@ func TestPatch(t *testing.T) {
 	}`)
 
 	//Create Request
-	middleware.StartDb()
 	req, err1 = http.NewRequest("POST", fmt.Sprintf("%s/", ts.URL), bytes.NewBuffer(jsonStr))
 
 	if err1 != nil {
@@ -324,8 +369,7 @@ func TestPatch(t *testing.T) {
 		"value": false
 	}`)
 
-	//Create Request
-	middleware.StartDb()
+	//Patch Request
 	req, err1 = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", ts.URL, serRes.ID), bytes.NewBuffer(jsonStr))
 
 	if err1 != nil {
@@ -363,6 +407,39 @@ func TestPatch(t *testing.T) {
 	if val[0] != "application/json; charset=utf-8" {
 		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
 	}
+
+	// patch Request
+	req, err1 = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", ts.URL, serRes.ID+"ew"), bytes.NewBuffer(jsonStr))
+
+	if err1 != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Content-Type", "application/json")
+
+	client = &http.Client{}
+	resp, err = client.Do(req)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, got %v", resp.StatusCode)
+	}
+
+	val, ok = resp.Header["Content-Type"]
+
+	// Assert that the "content-type" header is actually set
+	if !ok {
+		t.Fatalf("Expected Content-Type header to be set")
+	}
+
+	// Assert that it was set as expected
+	if val[0] != "application/json; charset=utf-8" {
+		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
+	}
 }
 
 func TestDelete(t *testing.T) {
@@ -375,12 +452,14 @@ func TestDelete(t *testing.T) {
 	ts := httptest.NewUnstartedServer(router.SetupRouter())
 	ts.Listener.Close()
 	ts.Listener = l
+	middleware.StartDb()
 	ts.Start()
+	defer middleware.CloseDb()
 	defer ts.Close()
 	var jsonStr = []byte(`
 		{
-			"username":"admin",
-			"password":"admin"
+			"username":"manask322",
+			"password":"123Manas@"
 		
 		}`)
 	req, err1 := http.NewRequest("POST", fmt.Sprintf("%s/login", ts.URL), bytes.NewBuffer(jsonStr))
@@ -437,7 +516,6 @@ func TestDelete(t *testing.T) {
 	}`)
 
 	//Create Request
-	middleware.StartDb()
 	req, err1 = http.NewRequest("POST", fmt.Sprintf("%s/", ts.URL), bytes.NewBuffer(jsonStr))
 
 	if err1 != nil {
@@ -465,7 +543,162 @@ func TestDelete(t *testing.T) {
 	}
 	var serRes ServiceResponse
 	json.Unmarshal(bodyBytes, &serRes)
-	fmt.Println("Delete ID : ", serRes.ID)
+	if resp.StatusCode != 201 {
+		t.Fatalf("Expected status code 201, got %v", resp.StatusCode)
+	}
+
+
+	//Start PATCH
+	bearer = "Bearer " + nameValue.Token
+
+	// Make a request to our server with the {base url}/ping
+	// resp, err := http.Get(fmt.Sprintf("/", ts.URL))
+
+	// Delete Request
+	req, err1 = http.NewRequest("DELETE", fmt.Sprintf("%s/%s", ts.URL, serRes.ID), bytes.NewBuffer(jsonStr))
+
+	if err1 != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Content-Type", "application/json")
+
+	client = &http.Client{}
+	resp, err = client.Do(req)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if resp.StatusCode != 204 {
+		t.Fatalf(" Delete Erro : Expected status code 204, got %v", resp.StatusCode)
+	}
+
+
+	req, err1 = http.NewRequest("DELETE", fmt.Sprintf("%s/%s", ts.URL, serRes.ID+"ew"), bytes.NewBuffer(jsonStr))
+
+	if err1 != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Content-Type", "application/json")
+
+	client = &http.Client{}
+	resp, err = client.Do(req)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if resp.StatusCode != 400 {
+		t.Fatalf(" Delete Erro : Expected status code 400, got %v", resp.StatusCode)
+	}
+
+}
+
+func TestGet(t *testing.T) {
+
+	l, err := net.Listen("tcp", "127.0.0.1:8080")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ts := httptest.NewUnstartedServer(router.SetupRouter())
+	ts.Listener.Close()
+	ts.Listener = l
+	ts.Start()
+	middleware.StartDb()
+	defer middleware.CloseDb()
+	defer ts.Close()
+	var jsonStr = []byte(`
+		{
+			"username":"manask322",
+			"password":"123Manas@"
+
+		}`)
+	req, err1 := http.NewRequest("POST", fmt.Sprintf("%s/login", ts.URL), bytes.NewBuffer(jsonStr))
+
+	if err1 != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	type AutoGenerated struct {
+		Code   int    `json:"code"`
+		Token  string `json:"token"`
+		Expire string `json:"expire"`
+	}
+	// Read the Body content
+	var bodyBytes []byte
+	if resp.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+	}
+	var nameValue AutoGenerated
+	json.Unmarshal(bodyBytes, &nameValue)
+
+	if resp.StatusCode != 200 {
+		t.Fatalf("Expected status code 200, got %v", resp.StatusCode)
+	}
+
+	val, ok := resp.Header["Content-Type"]
+
+	// Assert that the "content-type" header is actually set
+	if !ok {
+		t.Fatalf("Expected Content-Type header to be set")
+	}
+
+	// Assert that it was set as expected
+	if val[0] != "application/json; charset=utf-8" {
+		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
+	}
+
+	//Make POST Request
+	var bearer = "Bearer " + nameValue.Token
+
+	// Make a request to our server with the {base url}/ping
+	// resp, err := http.Get(fmt.Sprintf("/", ts.URL))
+	jsonStr = []byte(`
+	{
+		"key":"Manas",
+		"value": true
+	}`)
+
+	//Create Request
+	req, err1 = http.NewRequest("POST", fmt.Sprintf("%s/", ts.URL), bytes.NewBuffer(jsonStr))
+
+	if err1 != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Content-Type", "application/json")
+
+	client = &http.Client{}
+	resp, err = client.Do(req)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	type ServiceResponse struct {
+		ID    string `json:"id"`
+		Value bool   `json:"value"`
+		Key   string `json:"key"`
+	}
+	// Read the Body content
+	if resp.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(resp.Body)
+	}
+	var serRes ServiceResponse
+	json.Unmarshal(bodyBytes, &serRes)
 	if resp.StatusCode != 201 {
 		t.Fatalf("Expected status code 201, got %v", resp.StatusCode)
 	}
@@ -489,8 +722,7 @@ func TestDelete(t *testing.T) {
 	// resp, err := http.Get(fmt.Sprintf("/", ts.URL))
 
 	//Create Request
-	middleware.StartDb()
-	req, err1 = http.NewRequest("DELETE", fmt.Sprintf("%s/%s", ts.URL, serRes.ID), bytes.NewBuffer(jsonStr))
+	req, err1 = http.NewRequest("GET", fmt.Sprintf("%s/%s", ts.URL, serRes.ID), bytes.NewBuffer(jsonStr))
 
 	if err1 != nil {
 		t.Fatalf("Expected no error, got %v", err)
@@ -506,8 +738,42 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if resp.StatusCode != 204 {
-		t.Fatalf(" Delete Erro : Expected status code 204, got %v", resp.StatusCode)
+	if resp.StatusCode != 200 {
+		t.Fatalf("Expected status code 200, got %v", resp.StatusCode)
+	}
+
+	val, ok = resp.Header["Content-Type"]
+
+	// Assert that the "content-type" header is actually set
+	if !ok {
+		t.Fatalf("Expected Content-Type header to be set")
+	}
+
+	// Assert that it was set as expected
+	if val[0] != "application/json; charset=utf-8" {
+		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
+	}
+
+	// Value Error Request
+
+	req, err1 = http.NewRequest("GET", fmt.Sprintf("%s/%s", ts.URL, serRes.ID + "ew"), bytes.NewBuffer(jsonStr))
+
+	if err1 != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Content-Type", "application/json")
+
+	client = &http.Client{}
+	resp, err = client.Do(req)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, got %v", resp.StatusCode)
 	}
 
 	val, ok = resp.Header["Content-Type"]
@@ -522,161 +788,3 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
 	}
 }
-
-// func TestGet(t *testing.T) {
-
-// 	l, err := net.Listen("tcp", "127.0.0.1:8080")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	ts := httptest.NewUnstartedServer(router.SetupRouter())
-// 	ts.Listener.Close()
-// 	ts.Listener = l
-// 	ts.Start()
-// 	defer ts.Close()
-// 	var jsonStr = []byte(`
-// 		{
-// 			"username":"admin",
-// 			"password":"admin"
-
-// 		}`)
-// 	req, err1 := http.NewRequest("POST", fmt.Sprintf("%s/login", ts.URL), bytes.NewBuffer(jsonStr))
-
-// 	if err1 != nil {
-// 		t.Fatalf("Expected no error, got %v", err)
-// 	}
-// 	req.Header.Set("Content-Type", "application/json")
-
-// 	client := &http.Client{}
-// 	resp, err := client.Do(req)
-
-// 	if err != nil {
-// 		t.Fatalf("Expected no error, got %v", err)
-// 	}
-// 	type AutoGenerated struct {
-// 		Code   int    `json:"code"`
-// 		Token  string `json:"token"`
-// 		Expire string `json:"expire"`
-// 	}
-// 	// Read the Body content
-// 	var bodyBytes []byte
-// 	if resp.Body != nil {
-// 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-// 	}
-// 	var nameValue AutoGenerated
-// 	json.Unmarshal(bodyBytes, &nameValue)
-
-// 	if resp.StatusCode != 200 {
-// 		t.Fatalf("Expected status code 200, got %v", resp.StatusCode)
-// 	}
-
-// 	val, ok := resp.Header["Content-Type"]
-
-// 	// Assert that the "content-type" header is actually set
-// 	if !ok {
-// 		t.Fatalf("Expected Content-Type header to be set")
-// 	}
-
-// 	// Assert that it was set as expected
-// 	if val[0] != "application/json; charset=utf-8" {
-// 		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
-// 	}
-
-// 	//Make POST Request
-// 	var bearer = "Bearer " + nameValue.Token
-
-// 	// Make a request to our server with the {base url}/ping
-// 	// resp, err := http.Get(fmt.Sprintf("/", ts.URL))
-// 	jsonStr = []byte(`
-// 	{
-// 		"key":"Manas",
-// 		"value": true
-// 	}`)
-
-// 	//Create Request
-// 	middleware.StartDb()
-// 	req, err1 = http.NewRequest("POST", fmt.Sprintf("%s/", ts.URL), bytes.NewBuffer(jsonStr))
-
-// 	if err1 != nil {
-// 		t.Fatalf("Expected no error, got %v", err)
-// 	}
-
-// 	req.Header.Add("Authorization", bearer)
-// 	req.Header.Set("Content-Type", "application/json")
-
-// 	client = &http.Client{}
-// 	resp, err = client.Do(req)
-
-// 	if err != nil {
-// 		t.Fatalf("Expected no error, got %v", err)
-// 	}
-
-// 	type ServiceResponse struct {
-// 		ID    string `json:"id"`
-// 		Value bool   `json:"value"`
-// 		Key   string `json:"key"`
-// 	}
-// 	// Read the Body content
-// 	if resp.Body != nil {
-// 		bodyBytes, _ = ioutil.ReadAll(resp.Body)
-// 	}
-// 	var serRes ServiceResponse
-// 	json.Unmarshal(bodyBytes, &serRes)
-// 	fmt.Println("GET ID: ", serRes.ID)
-// 	if resp.StatusCode != 201 {
-// 		t.Fatalf("Expected status code 201, got %v", resp.StatusCode)
-// 	}
-
-// 	val, ok = resp.Header["Content-Type"]
-
-// 	// Assert that the "content-type" header is actually set
-// 	if !ok {
-// 		t.Fatalf("Expected Content-Type header to be set")
-// 	}
-
-// 	// Assert that it was set as expected
-// 	if val[0] != "application/json; charset=utf-8" {
-// 		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
-// 	}
-
-// 	//Start PATCH
-// 	bearer = "Bearer " + nameValue.Token
-
-// 	// Make a request to our server with the {base url}/ping
-// 	// resp, err := http.Get(fmt.Sprintf("/", ts.URL))
-
-// 	//Create Request
-// 	middleware.StartDb()
-// 	req, err1 = http.NewRequest("GET", fmt.Sprintf("%s/%s", ts.URL, serRes.ID), bytes.NewBuffer(jsonStr))
-
-// 	if err1 != nil {
-// 		t.Fatalf("Expected no error, got %v", err)
-// 	}
-
-// 	req.Header.Add("Authorization", bearer)
-// 	req.Header.Set("Content-Type", "application/json")
-
-// 	client = &http.Client{}
-// 	resp, err = client.Do(req)
-
-// 	if err != nil {
-// 		t.Fatalf("Expected no error, got %v", err)
-// 	}
-
-// 	if resp.StatusCode != 200 {
-// 		t.Fatalf("Expected status code 200, got %v", resp.StatusCode)
-// 	}
-
-// 	val, ok = resp.Header["Content-Type"]
-
-// 	// Assert that the "content-type" header is actually set
-// 	if !ok {
-// 		t.Fatalf("Expected Content-Type header to be set")
-// 	}
-
-// 	// Assert that it was set as expected
-// 	if val[0] != "application/json; charset=utf-8" {
-// 		t.Fatalf("Expected \"application/json; charset=utf-8\", got %s", val[0])
-// 	}
-// }

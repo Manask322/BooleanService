@@ -3,7 +3,6 @@ package controller
 import (
 	"booleanservice/src/models"
 	"booleanservice/src/service"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -47,7 +46,7 @@ func UpdateValue(c *gin.Context) {
 	id := c.Param("id")
 	bValue, err := service.ProcessRequest(c)
 	if err.Code != 0 {
-		c.JSON(400, gin.H{
+		c.JSON(err.Status, gin.H{
 			"message": models.GetErrorMessage(err.Code),
 		})
 		return
@@ -55,13 +54,13 @@ func UpdateValue(c *gin.Context) {
 	user := service.GetUser(c)
 	nameValue, err := service.BooleanUpdateService(id,user,bValue)
 	if err.Code != 0 {
-		c.JSON(400, gin.H{
+		c.JSON(err.Status, gin.H{
 			"message": models.GetErrorMessage(err.Code),
 		})
 		return
 	}
 	//queEle = <-middleware.ServiceQueueOut
-	c.JSON(201, gin.H{
+	c.JSON(err.Status, gin.H{
 		"id":    nameValue.ID,
 		"key":   nameValue.Key,
 		"value": nameValue.Value,
@@ -73,7 +72,6 @@ func DeleteValue(c *gin.Context) {
 	id := c.Param("id")
 	user := service.GetUser(c)
 	_,err := service.BooleanDeleteService(id,user.Id)
-	fmt.Println(" C : ", err)
 	if err.Code != 0 {
 		c.JSON(err.Status, gin.H{
 			"message": models.GetErrorMessage(err.Code),

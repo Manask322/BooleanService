@@ -3,7 +3,6 @@ package service
 import (
 	"booleanservice/src/middleware"
 	"booleanservice/src/models"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
@@ -38,7 +37,6 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*User); ok {
-				fmt.Println("V : ", v)
 				return jwt.MapClaims{
 					identityKey: v.UserName,
 				}
@@ -47,7 +45,6 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			fmt.Println("claims : ", claims)
 			return &User{
 				UserName: claims[identityKey].(string),
 			}
@@ -67,7 +64,6 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 					FirstName: "Wu",
 				}, nil
 			}
-			fmt.Println(userID, " : ", password)
 			db := middleware.DB
 			var value models.User
 			err := db.Model(&models.User{}).Where("username = ?",userID).Take(&value).Error
@@ -85,7 +81,6 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 				LastName: "LastName",
 				FirstName: "FirstName",
 			}
-			fmt.Println("User Set")
 			SetUser(user)
 			return &User{
 				Id : value.ID,
@@ -96,8 +91,6 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			claims := jwt.ExtractClaims(c)
-			fmt.Println("ID : ", claims["id"])
 			if _, ok := data.(*User); ok {
 				return true
 			}

@@ -37,9 +37,7 @@ func UpdateRecord(id string,bValue models.NameValue,userId int )(models.NameValu
 func DeleteRecord(id string,userId int) (models.NameValue,models.BooleanError){
 	db := middleware.DB
 	err, _ := GetRecordWithUserId(id,userId)
-	fmt.Println(" R1 : ", err)
 	if err.Code != 0 {
-		fmt.Println("Here")
 		return models.NameValue{},err
 	}
 
@@ -48,27 +46,15 @@ func DeleteRecord(id string,userId int) (models.NameValue,models.BooleanError){
 	if dErr != nil {
 		return models.NameValue{},models.BooleanError{Code:5,Status: 500}
 	}
-	fmt.Println(" R2 : ", err)
 	return models.NameValue{}, models.BooleanError{Status: 204}
 }
 
 func GetRecord(id string,userId int) (models.NameValue,models.BooleanError) {
-	fmt.Println(userId)
 	err, value := GetRecordWithUserId(id,userId)
 	if err.Code != 0 {
 		return models.NameValue{},err
 	}
 	return value,err
-}
-
-func GetUser(username string) (models.BooleanError, int){
-	db := middleware.DB
-	var value models.User
-	err := db.Model(&models.User{}).Select("id").Where("username = ?",username).Take(&value).Error
-	if err != nil {
-		return models.BooleanError{Code: 1,Status: 401},-1
-	}
-	return models.BooleanError{Status: 200},value.ID
 }
 
 func GetRecordWithUserId(id string,userId int) (models.BooleanError,models.NameValue){

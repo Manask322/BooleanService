@@ -16,10 +16,23 @@ var err error
 var Mu sync.RWMutex
 
 func getDbURL() string {
-	username := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	database := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HOST")
+	var username string
+	var password string
+	var database string
+	var dbHost string
+	if username = os.Getenv("DB_USER"); username == "" {
+		username = "root"
+	}
+
+	if password = os.Getenv("DB_PASSWORD"); password == "" {
+		password = "123Razorpay@"
+	}
+	if database = os.Getenv("DB_NAME"); database == "" {
+		database = "BooleanValues"
+	}
+	if dbHost = os.Getenv("DB_HOST"); dbHost == "" {
+		dbHost = "localhost"
+	}
 	// dbPort := os.Getenv("DB_PORT")
 	dbString := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", username, password, dbHost, database)
 	return dbString
@@ -27,8 +40,7 @@ func getDbURL() string {
 
 //StartDb is
 func StartDb() (*gorm.DB, error) {
-
-	DB, err = gorm.Open(os.Getenv("DB_DRIVER"), getDbURL())
+	DB, err = gorm.Open("mysql", getDbURL())
 
 	if err != nil {
 		return nil, err

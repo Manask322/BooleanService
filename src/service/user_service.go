@@ -3,7 +3,6 @@ package service
 import (
 	"booleanservice/src/middleware"
 	"booleanservice/src/models"
-	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +26,6 @@ func GetUser(c *gin.Context) models.BooleanUser{
 
 
 func SetUser(rUser models.BooleanUser)  {
-	fmt.Println(rUser)
 		user = rUser
 
 }

@@ -8,13 +8,13 @@ import (
 )
 
 type User struct {
-	ID int `gorm:"primary key"`
+	ID       int    `gorm:"primary key"`
 	Username string `json:"username" gorm:"unique"`
 	Password string `json:"password"`
 }
 
 type BooleanUser struct {
-	Id 		  int
+	Id        int
 	UserName  string
 	FirstName string
 	LastName  string
@@ -27,7 +27,7 @@ type NameValue struct {
 	UpdatedAt time.Time `json:"update_at"`
 	Value     bool      `gorm:"not null"`
 	Key       string
-	UserID    int       `json:"user_id"`
+	UserID    int `json:"user_id"`
 }
 
 //BeforeCreate is
@@ -43,4 +43,5 @@ type DatabaseNameValue struct {
 	UpdatedAt time.Time
 	Value     bool
 	Key       string
+	UserID    int
 }
